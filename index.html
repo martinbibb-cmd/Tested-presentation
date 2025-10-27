@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Depot Replacement – Tree UI (Markdown→Tiles)</title>
+<link rel="preconnect" href="https://unpkg.com">
+<style>
+:root{
+  --bg:#0b0d10; --panel:#151a1f; --tile:#1a1f27; --ink:#e9eef5; --muted:#9fb0c2;
+  --accent:#4aa3ff; --ok:#3ecf8e; --warn:#ffc247; --bad:#ff6b6b; --frame:#1f2630;
+  --haz-a:#9aa0a6; /* asbestos */
+  --haz-e:#ffd54f; /* electrical */
+  --haz-w:#ff9f43; /* WAH */
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+/* Banner */
+header{
+  position:sticky;top:0;z-index:50;display:flex;gap:12px;align-items:center;
+  padding:10px 14px;background:linear-gradient(0deg,#0b0d10,#0e1115);
+  border-bottom:1px solid var(--frame);
+}
+.header-left{display:flex;gap:10px;align-items:center}
+.badge{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--frame);font-weight:600}
+.badge b{font-weight:700}
+.hz{display:flex;gap:8px;align-items:center}
+.tag{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--frame);background:#0f1318;color:var(--muted);font-size:12px}
+.tag[data-type="asb"]{border-color:var(--haz-a);color:var(--haz-a)}
+.tag[data-type="ele"]{border-color:var(--haz-e);color:var(--haz-e)}
+.tag[data-type="wah"]{border-color:var(--haz-w);color:var(--haz-w)}
+header .actions{margin-left:auto;display:flex;gap:8px}
+button{
+  appearance:none;border:1px solid var(--frame);background:var(--panel);color:var(--ink);
+  padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer
+}
+button:hover{border-color:var(--accent)}
+/* Canvas */
+main{min-height:calc(100vh - 60px);display:grid;grid-template-columns:1fr auto}
+#canvas{padding:18px;display:grid;gap:14px}
+.grove{display:grid;gap:14px}
+.grove.root{grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.grove.branch{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.tile{
+  background:var(--tile);border:1px solid var(--frame);border-radius:18px;overflow:hidden;
+  display:flex;flex-direction:column;min-height:160px;position:relative;isolation:isolate;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.tile:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.28);border-color:#2a3340}
+.tile .media{aspect-ratio:16/9;background:#0f151d;border-bottom:1px solid var(--frame);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tile .media img{width:100%;height:100%;object-fit:cover}
+.tile .body{padding:12px 12px 58px}
+.tile h3{margin:0 0 6px 0;font-size:16px;line-height:1.2}
+.tile p{margin:0;color:var(--muted);font-size:13px}
+.tile .foot{
+  position:absolute;inset:auto 10px 10px 10px;display:flex;justify-content:space-between;align-items:center
+}
+.tile .branch-btn{border-radius:10px;padding:6px 10px}
+.tile .chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;border:1px solid var(--frame);padding:2px 6px;border-radius:999px;color:var(--muted)}
+/* Drawer */
+#drawer{
+  width:320px;border-left:1px solid var(--frame);background:var(--panel);padding:14px;display:flex;flex-direction:column;gap:10px
+}
+#drawer h4{margin:4px 0 6px;font-size:14px;color:#c9d7e7}
+.log-list{display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow:auto}
+.log{border:1px solid var(--frame);border-radius:12px;padding:8px;background:#0f1318}
+.log small{color:var(--muted)}
+.haz-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.photo-input{display:none}
+/* Footer floating */
+#footer{
+  position:fixed;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;z-index:40;background:#0f1318aa;backdrop-filter:blur(8px);
+  border:1px solid var(--frame);padding:8px;border-radius:14px
+}
+/* Connectors – limb lines (subtle) */
+.grove.root .tile::before,
+.grove.branch .tile::before{
+  content:"";position:absolute;left:-10px;top:24px;width:10px;height:2px;background:#2a3340;opacity:.6
+}
+.grove.root .tile:nth-child(odd)::before{opacity:.0}
+/* Small */
+@media (max-width: 980px){
+  main{display:block}
+  #drawer{position:fixed;right:10px;bottom:10px;width:calc(100% - 20px);max-width:420px;max-height:60vh;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <span class="badge">🧯 <b>Safety First</b></span>
+    <span class="hz">
+      <span class="tag" data-type="ele">⚡ Electrical</span>
+      <span class="tag" data-type="wah">🪜 WAH</span>
+      <span class="tag" data-type="asb">🧱 Asbestos</span>
+      <span class="tag">📷 Photos</span>
+    </span>
+  </div>
+  <div class="actions">
+    <button id="btnBack">⬅️ Back</button>
+    <button id="btnRoot">🌳 Root</button>
+    <button id="btnPreview">👁️ Preview</button>
+    <button id="btnExport">💾 Export JSON</button>
+  </div>
+</header>
+
+<main>
+  <section id="canvas">
+    <!-- root & branches rendered here -->
+  </section>
+  <aside id="drawer">
+    <h4>Live Safety Summary</h4>
+    <div class="haz-row" id="hazRow"></div>
+    <h4>Observations & Photos</h4>
+    <div class="log-list" id="logList"></div>
+  </aside>
+</main>
+
+<div id="footer">
+  <button id="btnAdd">➕ Add</button>
+  <button id="btnNext">➡️ Next</button>
+  <button id="btnDone">✅ Done</button>
+</div>
+
+<input class="photo-input" id="photoInput" type="file" accept="image/*" />
+
+<!-- libs -->
+<script src="https://unpkg.com/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
+
+<script>
+/** ----------------------------------------------------------
+ *  Minimal MD→Tree renderer with OPML-like tiles
+ *  - Tries /content.md; falls back to inline #demoMd
+ *  - Headings define hierarchy (#, ##, ###…)
+ *  - Images in a section become tile media
+ *  - Lists create “chips” and keyword-driven hazards/logs
+ *  ---------------------------------------------------------- */
+
+const md = window.markdownit({html:false,linkify:true,typographer:true});
+const state = {
+  tree:null,
+  stack:[],
+  path:[],
+  logs:[],
+  hazards:{ electrical:false, wah:false, asbestos:false },
+  photos:[],
+  selections:{} // { nodeId: true }
+};
+
+function slug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '-' + Math.random().toString(36).slice(2,7) }
+
+async function loadMarkdown(){
+  try{
+    const resp = await fetch('content.md',{cache:'no-store'});
+    if(!resp.ok) throw new Error('no content.md');
+    const txt = await resp.text();
+    return txt;
+  }catch(e){
+    // fallback
+    const inline = document.getElementById('demoMd')?.textContent ?? '# Depot Replacement\n';
+    return inline;
+  }
+}
+
+function mdToTree(src){
+  const tokens = md.parse(src,{});
+  const root = {id:'root',title:'Root',body:'',img:null,children:[]};
+  const stack = [{level:0,node:root}];
+  let cur = root;
+
+  for(let i=0;i<tokens.length;i++){
+    const t = tokens[i];
+
+    if(t.type==='heading_open'){
+      const level = parseInt(t.tag.slice(1),10);
+      let j=i+1, title='';
+      while(tokens[j] && tokens[j].type!=='heading_close'){
+        if(tokens[j].type==='inline') title += tokens[j].content;
+        j++;
+      }
+      const node = {id:slug(title||'section'), level, title:title||'Untitled', body:'', img:null, chips:[], children:[], raw:[]};
+      // attach
+      while(stack.length && stack[stack.length-1].level >= level) stack.pop();
+      stack[stack.length-1].node.children.push(node);
+      stack.push({level,node});
+      cur = node;
+      i = j; // advance to heading_close
+      continue;
+    }
+
+    if(t.type==='inline' && cur){
+      cur.body += (t.content || '') + '\n';
+      cur.raw.push(t);
+      // detect image token children to set media
+      if(t.children){
+        t.children.forEach(c=>{
+          if(c.type==='image'){
+            cur.img = c.attrGet('src') || cur.img;
+          }
+        });
+      }
+    }
+
+    // simple list → chips (lines starting with '- ' in inline content already in body)
+    if(t.type==='bullet_list_open'){
+      let j=i+1;
+      while(tokens[j] && tokens[j].type!=='bullet_list_close'){
+        if(tokens[j].type==='inline'){
+          const txt = tokens[j].content.trim();
+          if(txt) cur.chips = cur.chips || [], cur.chips.push(txt);
+        }
+        j++;
+      }
+      i=j;
+    }
+  }
+  return root;
+}
+
+function renderTreeAt(node){
+  const canvas = document.getElementById('canvas');
+  canvas.innerHTML = '';
+  const grove = document.createElement('div');
+  grove.className='grove ' + (node.id==='root'?'root':'branch');
+
+  const kids = (node.id==='root') ? node.children : node.children;
+  kids.forEach(child=>{
+    const tile = document.createElement('div');
+    tile.className='tile';
+    tile.dataset.id = child.id;
+
+    const media = document.createElement('div');
+    media.className='media';
+    media.innerHTML = child.img ? `<img src="${child.img}" alt="">` : `<div style="opacity:.5;font-size:13px">No image</div>`;
+    tile.appendChild(media);
+
+    const body = document.createElement('div');
+    body.className='body';
+    body.innerHTML = `<h3>${child.title}</h3><p>${(child.body||'').split('\n').find(x=>x.trim())||''}</p>`;
+    tile.appendChild(body);
+
+    const foot = document.createElement('div');
+    foot.className='foot';
+    const chips = document.createElement('div');
+    chips.className='chips';
+    (child.chips||[]).slice(0,4).forEach(c=>{
+      const s = document.createElement('span'); s.className='chip'; s.textContent=c; chips.appendChild(s);
+      // keyword logging / hazards
+      const text = c.toLowerCase();
+      if(text.includes('asbestos')) markHazard('asbestos','Asbestos flagged: '+child.title);
+      if(text.includes('wah') || text.includes('ladder') || text.includes('roof')) markHazard('wah','Working at height: '+child.title);
+      if(text.includes('electrical') || text.includes('socket')) markHazard('electrical','Electrical observation: '+child.title);
+      if(text.includes('see photo') || text.includes('photo')) attachPhotoPrompt(child.id, 'Photo requested for: '+child.title);
+    });
+    foot.appendChild(chips);
+
+    const btn = document.createElement('button');
+    btn.className='branch-btn';
+    btn.textContent = child.children?.length ? 'Open Branch →' : 'Select ✓';
+    btn.addEventListener('click', ()=>{
+      if(child.children?.length){
+        state.path.push(child.id);
+        renderTreeAt(child);
+      }else{
+        state.selections[child.id]=true;
+        log(`Selected: ${child.title}`);
+        saveState();
+      }
+    });
+    foot.appendChild(btn);
+    tile.appendChild(foot);
+
+    grove.appendChild(tile);
+  });
+
+  canvas.appendChild(grove);
+  updateHazBar();
+}
+
+function findNodeByPath(path){
+  let node = state.tree;
+  for(const id of path){
+    node = node.children.find(c=>c.id===id) || node;
+  }
+  return node;
+}
+
+function log(text, photoUrl){
+  const id = 'log-' + Date.now();
+  state.logs.unshift({id, text, photo:photoUrl||null, ts:new Date().toISOString()});
+  renderLogs();
+  saveState();
+}
+
+function renderLogs(){
+  const list = document.getElementById('logList');
+  list.innerHTML = '';
+  state.logs.forEach(L=>{
+    const div = document.createElement('div');
+    div.className='log';
+    div.innerHTML = `<div>${L.text}${L.photo?'<br><img src="'+L.photo+'" style="max-width:100%;border-radius:8px;margin-top:6px">':''}</div><small>${new Date(L.ts).toLocaleString()}</small>`;
+    list.appendChild(div);
+  });
+}
+
+function markHazard(kind, text){
+  if(kind==='electrical') state.hazards.electrical = true;
+  if(kind==='wah') state.hazards.wah = true;
+  if(kind==='asbestos') state.hazards.asbestos = true;
+  updateHazBar();
+  if(text) log(text);
+}
+
+function updateHazBar(){
+  const row = document.getElementById('hazRow');
+  row.innerHTML = '';
+  if(state.hazards.electrical) row.append(tag('⚡ Electrical risk','ele'));
+  if(state.hazards.wah)        row.append(tag('🪜 WAH','wah'));
+  if(state.hazards.asbestos)   row.append(tag('🧱 Asbestos','asb'));
+  if(!state.hazards.electrical && !state.hazards.wah && !state.hazards.asbestos){
+    row.innerHTML = '<span class="tag">No hazards flagged</span>';
+  }
+}
+function tag(text,type){
+  const s=document.createElement('span'); s.className='tag'; if(type) s.dataset.type=type; s.textContent=text; return s;
+}
+
+function attachPhotoPrompt(nodeId, note){
+  // create a chip that opens file picker once per node
+  // (handled when user clicks "Select" too)
+  // We also add a log line immediately so it's visible.
+  log(note + ' (awaiting photo)');
+}
+
+function pickPhoto(){
+  return new Promise(resolve=>{
+    const input = document.getElementById('photoInput');
+    input.onchange = ()=>{
+      const f = input.files[0];
+      if(!f){ resolve(null); return; }
+      const r = new FileReader();
+      r.onload = ()=> resolve(r.result);
+      r.readAsDataURL(f);
+      input.value = '';
+    };
+    input.click();
+  });
+}
+
+/* Controls */
+document.getElementById('btnBack').addEventListener('click', ()=>{
+  state.path.pop();
+  renderTreeAt(findNodeByPath(state.path));
+});
+document.getElementById('btnRoot').addEventListener('click', ()=>{
+  state.path = [];
+  renderTreeAt(state.tree);
+});
+document.getElementById('btnPreview').addEventListener('click', ()=>{
+  const out = {
+    hazards: state.hazards,
+    logs: state.logs,
+    selections: state.selections,
+    path: state.path
+  };
+  alert('Preview JSON in console'); console.log(out);
+});
+document.getElementById('btnExport').addEventListener('click', ()=>{
+  const data = {
+    meta:{ app:'Depot Replacement Tree UI', ts:new Date().toISOString() },
+    hazards: state.hazards,
+    logs: state.logs,
+    selections: state.selections
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a = Object.assign(document.createElement('a'),{ href:URL.createObjectURL(blob), download:'depot-tree-export.json' });
+  document.body.appendChild(a); a.click(); a.remove();
+});
+document.getElementById('btnAdd').addEventListener('click', async ()=>{
+  // Quick “See photo” helper for current branch
+  const dataUrl = await pickPhoto();
+  if(dataUrl){ state.photos.push(dataUrl); log('Photo added to current branch', dataUrl); saveState(); }
+});
+document.getElementById('btnNext').addEventListener('click', ()=>{
+  // naive: open first child of first tile (demo helper)
+  const node = findNodeByPath(state.path);
+  const next = node.children?.[0]?.children?.length ? node.children[0] : node.children?.[1];
+  if(next){ state.path.push(next.id); renderTreeAt(next); }
+});
+document.getElementById('btnDone').addEventListener('click', ()=>{
+  log('Marked branch as Done ✅');
+});
+
+/* Persistence */
+function saveState(){ try{ localStorage.setItem('depotTreeState', JSON.stringify({hazards:state.hazards,logs:state.logs,selections:state.selections})) }catch(e){} }
+function restoreState(){ try{ const s = JSON.parse(localStorage.getItem('depotTreeState')||'{}'); Object.assign(state.hazards,s.hazards||{}); state.logs=s.logs||[]; state.selections=s.selections||{}; }catch(e){} }
+
+/* Boot */
+(async function(){
+  restoreState();
+  const src = await loadMarkdown();
+  state.tree = mdToTree(src);
+  state.path = [];
+  renderTreeAt(state.tree);
+  renderLogs();
+})();
+</script>
+
+<!-- Fallback demo Markdown (delete once you add content.md at repo root) -->
+<script type="text/plain" id="demoMd">
+# Current System 🌡️
+![](img/system_root.png)
+Identify what's installed today (pick one, then branch).
+
+## Regular (Conventional)
+![](img/regular_schematic.png)
+> Cylinder present? Choose the type and plan.
+
+- Y-Plan (3-port)
+- S-Plan (2x 2-port)
+- Gravity legacy (convert to fully pumped) – WAH risk if loft
+- Electrical socket near boiler – log electrical
+- See photo – cylinder & airing cupboard
+
+### Cylinder Type
+![](img/cylinder_types.png)
+- Open-vented (F&E in loft)
+- Unvented (pressurised) – Electrical immersion nearby
+- Thermal Store – Asbestos check on old boards
+
+### Flue
+![](img/flue_options.png)
+- Horizontal
+- Vertical (pitched/flat) – WAH ladder/roof access
+- Direct rear
+
+## System (Sealed)
+![](img/system_schematic.png)
+> Pressurised primaries, no F&E tank.
+- Remote PRV possible
+- Electrical spur required
+- See photo – PRV route
+
+## Combi
+![](img/combi_schematic.png)
+> No tanks, DHW from boiler.
+- Shared mains? Note performance limits
+- Gas pipe upsizing likely
+- See photo – stopcock & main
+
+# Proposed System 🌱
+![](img/proposed_root.png)
+Choose new system and size; show images on tiles.
+
+## Worcester 4000 System
+![](img/wc_4000.png)
+- Check clearances (front 600mm; reduced option 450mm) – WAH if in cupboard top shelf
+- Electrical socket location
+- Asbestos – check airing cupboard boards
+
+## Vaillant ecoFIT Pure System
+![](img/vai_ecofit.png)
+- Cupboard fit; rear flue possible
+- Remote PRV option
+- See photo – cupboard
+
+# Site Conditions 🔎
+![](img/site_root.png)
+Safety checks logged in the banner.
+
+## Electrical
+![](img/electrical.png)
+- Spur present and isolated
+- Socket within 500mm of flue – Electrical
+- RCD protection present
+- See photo – consumer unit
+
+## Working at Heights (WAH)
+![](img/wah.png)
+- Flue > 6m or roof angle > 45° – WAH
+- Over conservatory/carport – WAH
+- Ladder access OK (1 in 4)
+- See photo – roof elevation
+
+## Asbestos
+![](img/asbestos.png)
+- Artex (pre-1985) – Asbestos
+- AIB panels near boiler – Asbestos
+- Cement flue – Asbestos
+- See photo – suspected ACM
+
+# Extras ➕
+![](img/extras.png)
+Optional add-ons and best practice.
+
+## Powerflush & Filter
+![](img/filter.png)
+- Powerflush recommended
+- Fernox TF1 Omega filter
+- See photo – filter position
+
+## Controls
+![](img/controls.png)
+- Hive Mini / TRVs
+- Weather comp (if supported)
+- Smart stat location – Electrical
+</script>
+</body>
+</html>
