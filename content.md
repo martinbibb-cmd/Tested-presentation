@@ -1,135 +1,157 @@
-# Job Overview 🧾
-![](img/job_start.png)
-Select existing system and target upgrade path.
+# Welcome to the Grove 🌳
+![](img/poc_welcome.png)
+This is a self-building UI demo. Learn how to navigate, select, attach photos, log safety, and export your journey.
 
-- See photo – current boiler & cylinder
-- Electrical isolation confirmed
-- Loft access check – WAH
+- Start by choosing a **path** below
+- “**Double-click**” (or **Cmd/Ctrl-click**) tiles to open branches without selecting
+- Click the floating **🧯 Safety** button anytime
+- See photo – take a screenshot or snap a pic to try it
 
-## Current System 🌡️
-![](img/regular_schematic.png)
-> Identify what’s installed today.
+## Choose a Practice Path
+::menu[single]
+![](img/poc_paths.png)
+Pick one to walk through a short tutorial.
 
-- Regular (open vented) – F&E in loft
-- Cylinder: copper vented – see photo
-- Controls: Y-Plan (3-port)
-- Flue: horizontal rear exit
-- See photo – airing cupboard & tank
-- Electrical socket near boiler – electrical
-- Loft ladder steep (over 6 m) – WAH
+### 1) Quick Tour (2 minutes)
+![](img/poc_quicktour.png)
+A fast way to learn the basics.
 
-### Existing Issues
-![](img/regular_issues.png)
-- Low system pressure / noisy pump
-- Radiators cold at top – sludge suspected
-- Asbestos board behind boiler – asbestos
-- See photo – suspected ACM
-- Recommend powerflush before upgrade
+### 2) Deeper Dive (5–7 minutes)
+![](img/poc_deeper.png)
+Covers sub-menus, multi-select, and repeatable items.
+
+### 3) Power User Track
+![](img/poc_power.png)
+Keyboard hints, branching tricks, and JSON export.
 
 ---
 
-# Proposed System 🌱
-![](img/system_schematic.png)
-> Conversion to sealed system (Ideal Logic System 24 kW)
+# Quick Tour (Basics) ✅
+![](img/poc_quicktour.png)
+We’ll cover: selecting tiles, opening branches, and logging a photo.
 
-- System type: Sealed / pressurised – no F&E tank
-- PRV & filling loop to be added
-- Auto-bypass included
-- Remote PRV discharge route – see photo
-- External condensate run < 3 m – insulated
+## Step 1 — Tap vs Open
+::menu[single]
+![](img/poc_tap_open.png)
+- **Tap** a tile to select it (radio style here)
+- **Double-click** (or Cmd/Ctrl-click) to open its branch without selecting
 
-## Selected Boiler 🔥
-![](img/ideal_logic_system.png)
-**Ideal Logic System 24 kW**  
-Case 700 × 395 × 278 mm  
-Clearances: Above 165 mm / Below 100 mm / Sides 2.5 mm / Front 450 mm  
-No compartment ventilation required.  
-Remote PRV option = Yes  |  Frost stat required = Yes.  [oai_citation:0‡Ideal System Boiler Quick Reference Guide.pdf](file-service://file-CqAVshc2bViiUu9nrhba1u)
+### Try It
+![](img/poc_tryit.png)
+Pick one, then double-click to open its child.
 
-- See photo – proposed wall & spur
-- Electrical spur ≤ 500 mm from boiler – electrical
-- Document: “Existing system open-vented → sealed conversion; customer informed of potential leak risk.” ration 💨
-![](img/horizontal_flue.png)
-> Horizontal flue through rear wall
+## Step 2 — “See photo”
+::menu[multi]
+![](img/poc_photo.png)
+Select both items and try adding a photo.
 
-- Distance to opening ≥ 300 mm
-- Distance to boundary ≥ 600 mm
-- Facing another outlet ≥ 1200 mm
-- Corner clearance (Ideal) = 25 mm reduction allowed once only per install.  [oai_citation:1‡DTG-July-24.pdf](file-service://file-N7qe1wk9ksG1A3xkdcJhje)etre back to boiler; support every 1 m of run.  [oai_citation:2‡DTG-July-24.pdf](file-service://file-N7qe1wk9ksG1A3xkdcJhje)al termination
+- See photo – try attaching one now
+- Add a note • optional
 
----
+## Step 3 — Safety Banner
+![](img/poc_safety.png)
+Selecting certain phrases **auto-logs safety** and shows tags in the floating panel.
 
-# Gas Supply 🔥
-![](img/gas_pipework.png)
-> Confirm pipe sizing & route
-
-- Existing 22 mm run ≈ 10 m → OK for 24 kW system boiler.  
-- Meter type = U6 (acity.  
-- Route: under stairs cupboard → kitchenlead or galvanised sections – none found
-- Gas tightness test recorded
+- Electrical socket near here – electrical
+- Ladder needed for access – WAH
+- Asbestos warning label seen – asbestos
 
 ---
 
-# Condensate 🧊
-![](img/condensate_run.png)
-> External run to trapped gully
+# Deeper Dive 🧭
+![](img/poc_deeper.png)
+Now we’ll explore **menu types** and sub-menus.
 
-- 40 mm insulated pipe (Condensulate type)
-- Fall ≥ 50 mm/m back to boiler
-- Terminate with non-return trap + guard at gully
-- Length < 3 m → no trace heat required
-- See photo – external termination
-- Add frost protection pack if run extended later.  
+## Menu Types (Parent controls Children)
+::menu[single]
+![](img/poc_menu_types.png)
+Pick one to learn more.
+
+### (A) Single Choice
+::menu[single]
+![](img/poc_single.png)
+Choose exactly **one** child. Selecting another unselects the previous.
+
+- Option A
+- Option B
+- Option C
+
+### (B) Multiple Choice
+::menu[multi]
+![](img/poc_multi.png)
+Choose **many** children. Click again to toggle off.
+
+- Include screenshots – see photo
+- Add checklist
+- Mark electrical risk – electrical
+- Flag height risk – WAH
+
+### (C) Repeatable Items
+::menu[repeat]
+![](img/poc_repeat.png)
+Tap the same tile again to **increase quantity** (×2, ×3…).
+
+- Extra item
+- Spare part
+- Additional note page
+
+## Nested Sub-Menus
+::menu[single]
+![](img/poc_nested.png)
+Pick one and **double-click** to drill deeper.
+
+### Level 2
+::menu[multi]
+![](img/poc_level2.png)
+- Attach a diagram – see photo
+- Record an issue – electrical
+- Access via ladder – WAH
+
+#### Level 3 (Optional)
+::menu[single]
+![](img/poc_level3.png)
+- Confirm
+- Skip
 
 ---
 
-# Cylinder Replacement ⚙️
-![](img/unvented_cylinder.pnged + F&E tank, fit unvented 170 L cylinder.
+# Power User Track ⚡
+![](img/poc_power.png)
+Faster navigation and output controls.
 
-- Include expansion vessel and safety valve set
-- PRV discharge to external wall (visible termination)
-- Pipe upgrade to 22 mm primaries (min)
-- Document additional hour for open-vent removal pack (P0039).  [oai_citation:3‡Ideal System Boiler Quick Reference Guide.pdf](file-service://file-CqAVshc2bViiUu9nrhba1u)
-- See photo – new cylinder location
+## Fast Navigation
+::menu[multi]
+![](img/poc_fastnav.png)
+- **Cmd/Ctrl-click** to open without selecting
+- **Back** to go up one level
+- **Root** to jump to the start
 
----
+## Export & Hand-off
+::menu[multi]
+![](img/poc_export.png)
+- Use **💾 Export JSON** (bottom toolbar)
+- JSON contains selections, counts, safety tags, and logs
+- Share JSON with colleagues for review
 
-# Safety Checks & Hay_banner.png)
-> Auto-populated banner summary will show these.
-
-- ⚡ Electrical spur ≤ 500 mm → electrical
-- 🪜 Loft ladder steep > 6 m → WAH
-- 🧱 Asbestos board behind boiler → asbestos
-- See photo – ACM evidence
-
----
-
-# Extras & Best Practice ➕
-![](img/extras.png)
-> Optional add-ons / packages
-
-## Powerflush & Filter
-![](img/filter.png)
-- Full powerflush pre-install → flush and protector added.  [oai_citation:4‡DTG-July-24.pdf](file-service://file-N7qe1wk9ksG1A3xkdcJhje)
-- Fit Fernox TF1 Omega filter under boiler return leg (brass  photo – filter fitment
-
-## Controls & Commissioning
-![](img/controls.png)
-- nnel 1 heating / channel 2 cylinder
-- TRVs throughout (rooms except bypass)
-- See photo – control location
+## Tips & Conventions
+::menu[multi]
+![](img/poc_tips.png)
+- Use short **headings** as tiles
+- Put `::menu[...]` in the parent section to control children
+- Bullet points render as **chips** (good for hints & triggers)
+- Keywords trigger safety: **electrical**, **WAH/ladder/roof**, **asbestos**
+- “See photo” prompts image attachment
 
 ---
 
-# Summary 📦
-![](img/summary.png)
-> Auto-generate summary for PDF & Depot Notes.
+# Finish 🏁
+![](img/poc_finish.png)
+You’ve completed the POC journey. Try switching paths or exporting your JSON.
 
-- Existing system → sealed Ideal Logic System 24 kW
-- Flue horizontal rear, external condensate 3 m insulated
-- Gas 22 mm run, U6 meter OK
-- Unvented cylinder installed 170 L
-- Powerflush + Fernox TF1 Omega Filter
-- Hive controls fitted
-- Hazards: ⚡ electrical spur, 🪜 WAH, 🧱 asbestos
-- Customer advised on increased pressure & maintenance of unvented system
+## What’s Next?
+::menu[multi]
+![](img/poc_next.png)
+- Replace placeholder images in `/img/` with your own
+- Start a real flow (e.g., survey → proposal → extras)
+- Wire chips to validations or price data
+- Share exported JSON with your team
